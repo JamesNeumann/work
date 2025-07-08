@@ -162,10 +162,13 @@ app.post('/api/init', async (req, res) => {
 
 // Serve static files from React app
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../build')));
+  // In Docker, the build folder is in the same directory as the server
+  const buildPath = path.join(__dirname, 'build');
+  
+  app.use(express.static(buildPath));
   
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../build', 'index.html'));
+    res.sendFile(path.join(buildPath, 'index.html'));
   });
 }
 
