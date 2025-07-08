@@ -1,0 +1,29 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main # Adjust if you want to trigger on a different branch
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: hafen.cloud.vu
+          username: ${{ secrets.REGISTRY_USERNAME }} # Add this secret in your GitHub repo
+          password: ${{ secrets.REGISTRY_PASSWORD }} # Add this secret in your GitHub repo
+
+      - name: Build Client Docker Image
+        run: |
+          docker build -t hafen.cloud.vu/sven-work/client:latest .
+
+      - name: Push Client Docker Image
+        run: |
+          docker push hafen.cloud.vu/sven-work/client:latest
