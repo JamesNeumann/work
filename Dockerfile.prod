@@ -1,0 +1,107 @@
+# Multi-stage production Dockerfile
+FROM node:18-alpine AS frontend-build
+
+WORKDIR /app
+
+# Copy frontend files
+COPY package*.json ./
+COPY *.jsx ./
+COPY *.html ./
+COPY tailwind.config.js ./
+
+# Install dependencies and build
+RUN npm ci --only=production
+
+# Create optimized frontend build
+RUN mkdir -p build && \
+    cp index-api.html build/index.html && \
+    cp FeatureMatrixWithAPI.jsx build/ && \
+    cp utils/api.js build/utils/ && \
+    echo "Frontend build completed"
+
+# Backend stage
+FROM node:18-alpine AS backend
+
+WORKDIR /app
+
+# Copy backend package files
+COPY package*.json ./
+RUN npm ci --only=production --silent
+
+# Copy backend source code
+COPY server.js ./
+COPY models/ ./models/
+COPY routes/ ./routes/
+COPY middleware/ ./middleware/
+COPY utils/ ./utils/
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Install security updates
+RUN apk update && apk upgrade && \
+    apk add --no-cache dumb-init curl && \
+    rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+# Create app user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001 -G nodejs
+
+# Copy backend files
+COPY --from=backend --chown=nodeuser:nodejs /app /app
+
+# Copy built frontend
+COPY --from=frontend-build --chown=nodeuser:nodejs /app/build /app/frontend
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/backups && \
+    chown -R nodeuser:nodejs /app/logs /app/backups
+
+# Health check script
+COPY --chown=nodeuser:nodejs <<EOF /app/healthcheck.js
+const http = require('http');
+
+const options = {
+  host: 'localhost',
+  port: process.env.PORT || 5000,
+  path: '/api/health',
+  timeout: 2000,
+};
+
+const request = http.request(options, (res) => {
+  if (res.statusCode === 200) {
+    process.exit(0);
+  } else {
+    process.exit(1);
+  }
+});
+
+request.on('error', () => {
+  process.exit(1);
+});
+
+request.on('timeout', () => {
+  request.destroy();
+  process.exit(1);
+});
+
+request.end();
+EOF
+
+# Switch to non-root user
+USER nodeuser
+
+# Expose port
+EXPOSE 5000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node healthcheck.js
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["node", "server.js"]

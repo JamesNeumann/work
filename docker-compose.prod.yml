@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: work-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: SecurePassword2024!
+      MONGO_INITDB_DATABASE: feature-matrix
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./backups:/backups
+    networks:
+      - work-network
+    command: [--auth]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: work-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DOMAIN=work.cloud.vu
+      - CLIENT_URL=https://work.cloud.vu
+      - MONGODB_URI=mongodb://admin:SecurePassword2024!@mongodb:27017/feature-matrix?authSource=admin
+      - JWT_SECRET=SuperSecureJWTSecretForProduction2024WorkCloudVu!@#$$%
+      - JWT_EXPIRE=7d
+      - CORS_ORIGIN=https://work.cloud.vu
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=1000
+      - HELMET_ENABLED=true
+      - TRUST_PROXY=true
+      - LOG_LEVEL=info
+    depends_on:
+      - mongodb
+    networks:
+      - work-network
+    volumes:
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  nginx:
+    image: nginx:alpine
+    container_name: work-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/build:/usr/share/nginx/html:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend
+    networks:
+      - work-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # SSL Certificate Management (Let's Encrypt)
+  certbot:
+    image: certbot/certbot
+    container_name: work-certbot
+    volumes:
+      - ./ssl:/etc/letsencrypt
+      - ./ssl-challenge:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email admin@cloud.vu --agree-tos --no-eff-email -d work.cloud.vu
+    depends_on:
+      - nginx
+
+  # Database Backup Service
+  backup:
+    image: mongo:7.0
+    container_name: work-backup
+    restart: "no"
+    environment:
+      - MONGO_USERNAME=admin
+      - MONGO_PASSWORD=SecurePassword2024!
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_DATABASE=feature-matrix
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts:ro
+    networks:
+      - work-network
+    command: /scripts/backup.sh
+    depends_on:
+      - mongodb
+
+  # Monitoring (optional)
+  watchtower:
+    image: containrrr/watchtower
+    container_name: work-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600
+      - WATCHTOWER_NOTIFICATIONS=email
+      - WATCHTOWER_NOTIFICATION_EMAIL_FROM=watchtower@cloud.vu
+      - WATCHTOWER_NOTIFICATION_EMAIL_TO=admin@cloud.vu
+    command: --interval 3600 work-backend work-nginx
+
+volumes:
+  mongodb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/work/data
+
+networks:
+  work-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
