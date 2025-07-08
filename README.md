@@ -1,46 +1,129 @@
-# Getting Started with Create React App
+# Feature Matrix Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Eine React-Anwendung mit MongoDB-Backend zur Verwaltung und Darstellung einer Feature-Matrix für Swiss Life Finanzvertrieb.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Responsive Design**: Moderne UI mit Tailwind CSS
+- **Datenfilterung**: Filter nach Entwicklungsstatus (Produktiv, Wireframe, Geplant)
+- **Statistik-Dashboard**: Übersicht über Projektfortschritt
+- **REST API**: Vollständige CRUD-Operationen
+- **MongoDB Integration**: Persistente Datenspeicherung
+- **Docker Support**: Containerisierte Anwendung
 
-### `npm start`
+## Technologien
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Frontend**: React, TypeScript, Tailwind CSS, Lucide Icons
+- **Backend**: Node.js, Express, MongoDB, Mongoose
+- **Containerisierung**: Docker, Docker Compose
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Entwicklung
 
-### `npm test`
+### Voraussetzungen
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js 18+
+- MongoDB (lokal oder Docker)
+- Docker & Docker Compose (optional)
 
-### `npm run build`
+### Lokale Entwicklung
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Repository klonen**
+   ```bash
+   git clone <repository-url>
+   cd feature-matrix
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Dependencies installieren**
+   ```bash
+   npm install
+   npm run install-server
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Umgebungsvariablen konfigurieren**
+   ```bash
+   cp .env.example .env
+   ```
 
-### `npm run eject`
+4. **MongoDB starten** (wenn lokal installiert)
+   ```bash
+   mongod
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+5. **Anwendung starten**
+   ```bash
+   npm run dev
+   ```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+   Die Anwendung ist verfügbar unter:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Docker Deployment
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+1. **Mit Docker Compose starten**
+   ```bash
+   docker-compose up --build
+   ```
 
-## Learn More
+2. **Datenbank initialisieren**
+   ```bash
+   curl -X POST http://localhost:5000/api/init
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+   Die Anwendung ist verfügbar unter: http://localhost:5000
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## API Endpoints
+
+- `GET /api/features` - Alle Features abrufen
+- `POST /api/features` - Neues Feature erstellen
+- `PUT /api/features/:id` - Feature aktualisieren
+- `DELETE /api/features/:id` - Feature löschen
+- `POST /api/init` - Datenbank mit Beispieldaten initialisieren
+
+## Projektstruktur
+
+```
+feature-matrix/
+├── public/                 # Statische Dateien
+├── src/
+│   ├── components/        # React Komponenten
+│   │   └── FeatureMatrix.tsx
+│   ├── App.tsx
+│   └── index.tsx
+├── server/                # Backend API
+│   ├── index.js          # Express Server
+│   └── package.json
+├── docker-compose.yml     # Docker Compose Konfiguration
+├── Dockerfile            # Docker Image Definition
+└── README.md
+```
+
+## Deployment
+
+### Produktionsumgebung
+
+1. **Environment Variables setzen**
+   ```bash
+   export NODE_ENV=production
+   export MONGODB_URI=mongodb://user:pass@host:port/database
+   ```
+
+2. **Build erstellen**
+   ```bash
+   npm run build
+   ```
+
+3. **Server starten**
+   ```bash
+   npm run server
+   ```
+
+### Mit Docker
+
+```bash
+docker-compose -f docker-compose.yml up -d
+```
+
+## Lizenz
+
+Dieses Projekt ist für interne Zwecke bei Swiss Life entwickelt worden.

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: feature-matrix-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: feature-matrix
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - feature-matrix-network
+
+  app:
+    build: .
+    container_name: feature-matrix-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/feature-matrix?authSource=admin
+      - PORT=5000
+    depends_on:
+      - mongodb
+    networks:
+      - feature-matrix-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  feature-matrix-network:
+    driver: bridge
