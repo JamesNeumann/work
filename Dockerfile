@@ -1,31 +1,37 @@
-# Use the official Node.js 18 image
-FROM node:18-alpine
+# Multi-stage build for React app
+FROM node:18-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if available)
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including devDependencies for build)
+RUN npm ci
 
-# Copy the rest of the application code
-COPY . .
+# Copy source code
+COPY public ./public
+COPY src ./src
+COPY tsconfig.json ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
 
-# Create a non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodeuser -u 1001
+# Build the React app
+RUN npm run build
 
-# Create logs directory
-RUN mkdir -p /app/logs && chown -R nodeuser:nodejs /app/logs
+# Production stage with nginx
+FROM nginx:alpine
 
-# Change ownership of the app directory
-RUN chown -R nodeuser:nodejs /app
-USER nodeuser
+# Copy built app from build stage
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose the port the app runs on
-EXPOSE 5000
+# Copy custom nginx config (if needed)
+COPY nginx-client.conf /etc/nginx/conf.d/default.conf
 
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
 # Start the application
 CMD ["npm", "start"]
