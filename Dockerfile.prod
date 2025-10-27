@@ -3,21 +3,21 @@ FROM node:18-alpine AS frontend-build
 
 WORKDIR /app
 
-# Copy frontend files
+# Copy frontend package files
 COPY package*.json ./
-COPY *.jsx ./
-COPY *.html ./
+
+# Install all dependencies (including devDependencies needed for build)
+RUN npm ci
+
+# Copy frontend source code
+COPY public ./public
+COPY src ./src
+COPY tsconfig.json ./
 COPY tailwind.config.js ./
+COPY postcss.config.js ./
 
-# Install dependencies and build
-RUN npm ci --only=production
-
-# Create optimized frontend build
-RUN mkdir -p build && \
-    cp index-api.html build/index.html && \
-    cp FeatureMatrixWithAPI.jsx build/ && \
-    cp utils/api.js build/utils/ && \
-    echo "Frontend build completed"
+# Build the React app
+RUN npm run build
 
 # Backend stage
 FROM node:18-alpine AS backend
