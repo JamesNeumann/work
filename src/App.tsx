@@ -1,21 +1,11 @@
-import React, { useState } from 'react';
-import LandingPage from './components/LandingPage';
-import FeatureMatrix from './components/FeatureMatrix';
+import React from 'react';
+import Dashboard from './components/Dashboard';
+import './App.css';
 
 function App() {
-  const [showMatrix, setShowMatrix] = useState(false);
-
-  if (showMatrix) {
-    return (
-      <div className="App">
-        <FeatureMatrix />
-      </div>
-    );
-  }
-
   return (
     <div className="App">
-      <LandingPage onEnter={() => setShowMatrix(true)} />
+      <Dashboard />
     </div>
   );
 }

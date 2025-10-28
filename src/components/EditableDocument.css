@@ -1,0 +1,158 @@
+.editable-document {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  box-shadow: 0 1px 3px var(--shadow-color);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.editable-document::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 20px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 12px var(--glow-color);
+}
+
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.document-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.document-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-edit,
+.btn-save,
+.btn-cancel {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.btn-edit:hover,
+.btn-save:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  box-shadow: 0 0 15px var(--glow-color);
+}
+
+.btn-save {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+}
+
+.btn-save:hover {
+  color: var(--bg-primary);
+  box-shadow: 0 0 20px var(--glow-color);
+}
+
+.btn-cancel:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
+}
+
+.document-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.3s ease;
+  letter-spacing: 0.02em;
+}
+
+.document-textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px var(--glow-color), inset 0 0 30px rgba(0, 0, 0, 0.05);
+}
+
+.document-display {
+  min-height: 150px;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  cursor: text;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  transition: all 0.3s ease;
+  letter-spacing: 0.02em;
+}
+
+.document-display:empty::before {
+  content: attr(placeholder);
+  color: var(--text-secondary);
+  font-style: italic;
+  opacity: 0.5;
+}
+
+.document-display:hover {
+  border-color: var(--border-color);
+  box-shadow: 0 0 15px var(--glow-color);
+}
+
+@media (max-width: 768px) {
+  .editable-document {
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .document-header h3 {
+    font-size: 0.9375rem;
+  }
+
+  .btn-edit,
+  .btn-save,
+  .btn-cancel {
+    padding: 0.4rem 0.875rem;
+    font-size: 0.75rem;
+  }
+
+  .document-textarea,
+  .document-display {
+    font-size: 0.8125rem;
+  }
+}

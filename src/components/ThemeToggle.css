@@ -1,0 +1,53 @@
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  position: relative;
+}
+
+.theme-toggle-track {
+  width: 50px;
+  height: 24px;
+  background: var(--bg-primary);
+  border-radius: 2px;
+  position: relative;
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 3px var(--shadow-color);
+}
+
+.theme-toggle:hover .theme-toggle-track {
+  border-color: var(--accent-primary);
+  box-shadow: inset 0 1px 3px var(--shadow-color), 0 0 15px var(--glow-color);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px var(--glow-color);
+}
+
+.theme-toggle-thumb.light {
+  left: 2px;
+}
+
+.theme-toggle-thumb.dark {
+  left: 28px;
+}
+
+.theme-toggle-thumb .icon {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.8;
+}
